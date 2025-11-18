@@ -1,0 +1,10 @@
+bin/
+obj/
+publish/
+dist/
+postgres-database-provider.zip
+*.user
+*.DotSettings
+*.suo
+*.pdb
+.vs/

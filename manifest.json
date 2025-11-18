@@ -1,0 +1,17 @@
+{
+  "guid": "d909954c-5dd0-4feb-86f5-04330a03bf8e",
+  "name": "PostgreSQL Database Provider",
+  "description": "Adds an experimental PostgreSQL-backed database provider for Jellyfin.",
+  "overview": "Use PostgreSQL instead of the built-in SQLite database.",
+  "owner": "custom",
+  "category": "Database",
+  "version": "0.1.0",
+  "changelog": "Initial preview release with basic configuration and maintenance hooks.",
+  "targetAbi": "10.12.0",
+  "timestamp": "2025-02-15T00:00:00Z",
+  "status": 0,
+  "autoUpdate": false,
+  "assemblies": [
+    "Jellyfin.Plugin.Postgres.dll"
+  ]
+}
