@@ -4,7 +4,7 @@ This plugin swaps Jellyfin’s embedded SQLite database for PostgreSQL by supply
 
 ## Compatibility
 
-- Target ABI / Jellyfin release: **10.12.x** (see `manifest.json:10`)
+- Target ABI / Jellyfin release: **10.11.3**
 - .NET runtime: **net9.0**
 - Database: PostgreSQL 14+ (tested with `postgres:16`)
 
@@ -81,6 +81,10 @@ services:
         "LockingBehavior": "NoLock"
       }
       JSON
+      mkdir -p /config/plugins
+      echo "Downloading PostgreSQL plugin bundle..."
+      wget -q -O /config/plugins/postgres-database-provider.zip \
+        https://github.com/0xBADBAC0N/jellyfin-plugin-psql/releases/download/v0.2.0/postgres-database-provider.zip
 
   jellyfin-db:
     image: postgres:16
@@ -93,7 +97,7 @@ services:
       - jellyfin_pgdata:/var/lib/postgresql/data
 
   jellyfin:
-    image: jellyfin/jellyfin:latest
+    image: jellyfin/jellyfin:10.11.3.20251116-224056
     depends_on:
       jellyfin-config-init:
         condition: service_completed_successfully
@@ -106,7 +110,6 @@ services:
     volumes:
       - jellyfin_config:/config
       - jellyfin_cache:/cache
-      - ./postgres-database-provider.zip:/config/plugins/postgres-database-provider.zip:ro
 volumes:
   jellyfin_config:
   jellyfin_cache:
@@ -114,64 +117,6 @@ volumes:
 ```
 
 The lightweight `jellyfin-config-init` container runs once to seed `/config/data/database.json`. Subsequent Jellyfin restarts reuse the same file; change the heredoc contents if you need different settings.
-
-## Supported custom options
-
-1. Provision PostgreSQL (standalone or via `docker-compose`). Minimal example:
-
-   ```yaml
-   services:
-     jellyfin-db:
-       image: postgres:16
-       restart: unless-stopped
-       environment:
-         POSTGRES_DB: jellyfin
-         POSTGRES_USER: jellyfin
-         POSTGRES_PASSWORD: supersecret
-       volumes:
-         - jellyfin_pgdata:/var/lib/postgresql/data
-   ```
-
-2. Mount the plugin bundle into the Jellyfin container:
-
-   ```yaml
-   services:
-     jellyfin:
-       image: jellyfin/jellyfin:latest
-       volumes:
-         - jellyfin_config:/config
-         - jellyfin_cache:/cache
-         - ./postgres-database-provider.zip:/config/plugins/postgres-database-provider.zip:ro
-   ```
-
-3. Inside `/config/data/database.json` set the database type to the plugin provider and supply the connection info:
-
-   ```json
-   {
-     "DatabaseType": "PLUGIN_PROVIDER",
-     "CustomProviderOptions": {
-       "PluginName": "postgres-database-provider",
-       "PluginAssembly": "Jellyfin.Plugin.Postgres",
-       "ConnectionString": "Host=jellyfin-db;Database=jellyfin;Username=jellyfin;Password=supersecret", 
-       "Options": [
-         { "Key": "default-schema", "Value": "public" },
-         { "Key": "command-timeout", "Value": "60" },
-         { "Key": "enable-retry-on-failure", "Value": "true" },
-         { "Key": "retry-count", "Value": "5" },
-         { "Key": "retry-delay-seconds", "Value": "15" },
-         { "Key": "builder:SearchPath", "Value": "public" }
-       ]
-     },
-     "LockingBehavior": "NoLock"
-   }
-   ```
-
-   - `PluginName` must match the folder/zip name dropped into `/config/plugins`
-   - `PluginAssembly` is the DLL without extension
-   - `ConnectionString` is passed to `NpgsqlConnectionStringBuilder`
-   - Use `builder:<Option>` entries to override arbitrary connection-string keywords (e.g. `builder:SearchPath`)
-
-4. Restart Jellyfin. The server logs should include: `Configured PostgreSQL connection: Host=..., Database=...` if loading succeeded.
 
 ## Supported custom options
 

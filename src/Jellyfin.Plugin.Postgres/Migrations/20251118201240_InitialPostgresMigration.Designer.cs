@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Jellyfin.Plugin.Postgres.Migrations
 {
     [DbContext(typeof(JellyfinDbContext))]
-    [Migration("20251118190914_InitialPostgresMigration")]
+    [Migration("20251118201240_InitialPostgresMigration")]
     partial class InitialPostgresMigration
     {
         /// <inheritdoc />
